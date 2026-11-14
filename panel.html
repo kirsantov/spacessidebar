@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Spaces Sidebar</title>
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+<header>
+  <div class="top">
+    <button id="spaceTitle" data-i18n-title="editSpace"></button>
+    <button id="pinCurrent" class="icon" data-icon="plus" data-i18n-title="pinCurrent"></button>
+    <button id="newFolder" class="icon" data-icon="folder" data-i18n-title="newFolder"></button>
+    <button id="menuBtn" class="icon" data-icon="more" data-i18n-title="menu"></button>
+  </div>
+  <input id="search" type="search" data-i18n-ph="searchPh" autocomplete="off">
+</header>
+<main>
+  <section id="pinned"></section>
+  <div class="divider"><span data-i18n="openTabs"></span><button id="clearTabs" data-i18n="clear" data-i18n-title="clearHint"></button></div>
+  <button id="newTab" class="row ghost"><span class="fav" data-icon="plus"></span><span class="title" data-i18n="newTab"></span></button>
+  <section id="tabs"></section>
+</main>
+<footer id="spacesBar"></footer>
+<div id="ctx" hidden></div>
+<dialog id="dlg"><form method="dialog" id="dlgForm"></form></dialog>
+<input type="file" id="file" accept=".json,.html,.htm,application/json,text/html" hidden>
+<script src="icons.js"></script>
+<script src="arc-import.js"></script>
+<script src="panel.js"></script>
+</body>
+</html>

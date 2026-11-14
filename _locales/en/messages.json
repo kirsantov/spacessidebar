@@ -1,0 +1,224 @@
+{
+ "extName": {
+  "message": "Spaces Sidebar — Arc-style spaces & pinned tabs"
+ },
+ "extDesc": {
+  "message": "Arc-style sidebar for Chrome: Spaces, folders and pinned tabs that reopen in their own tab. One-step import from Arc."
+ },
+ "cmdToggle": {
+  "message": "Toggle the sidebar"
+ },
+ "editSpace": {
+  "message": "Edit Space"
+ },
+ "pinCurrent": {
+  "message": "Pin current tab"
+ },
+ "newFolder": {
+  "message": "New folder"
+ },
+ "menu": {
+  "message": "Menu"
+ },
+ "searchPh": {
+  "message": "Search pinned and open tabs"
+ },
+ "openTabs": {
+  "message": "Open tabs"
+ },
+ "clear": {
+  "message": "Clear"
+ },
+ "clearHint": {
+  "message": "Close unpinned tabs"
+ },
+ "newTab": {
+  "message": "New tab"
+ },
+ "nothing": {
+  "message": "Nothing found"
+ },
+ "emptySpace": {
+  "message": "Empty Space. Pin the current tab with +, or drag a tab here from the list below."
+ },
+ "obTitle": {
+  "message": "Moving from Arc?"
+ },
+ "obText": {
+  "message": "Drop StorableSidebar.json here. Spaces, folders and pinned tabs come over as they were."
+ },
+ "obWhere": {
+  "message": "The file lives here:"
+ },
+ "obReveal": {
+  "message": "Show it in the file manager — paste into a terminal:"
+ },
+ "obChoose": {
+  "message": "Choose file…"
+ },
+ "obLocal": {
+  "message": "The file is read locally. Nothing leaves your browser."
+ },
+ "obPickerHint": {
+  "message": "In the macOS file dialog press ⌘⇧G and paste the path."
+ },
+ "copied": {
+  "message": "Copied"
+ },
+ "copy": {
+  "message": "Copy"
+ },
+ "closeTabKeep": {
+  "message": "Close tab (stays pinned)"
+ },
+ "close": {
+  "message": "Close"
+ },
+ "cancel": {
+  "message": "Cancel"
+ },
+ "ok": {
+  "message": "OK"
+ },
+ "yes": {
+  "message": "Yes"
+ },
+ "delete": {
+  "message": "Delete"
+ },
+ "replace": {
+  "message": "Replace"
+ },
+ "openBg": {
+  "message": "Open in background tab"
+ },
+ "edit": {
+  "message": "Edit…"
+ },
+ "rename": {
+  "message": "Rename…"
+ },
+ "rememberUrl": {
+  "message": "Use the tab's current address"
+ },
+ "copyLink": {
+  "message": "Copy link"
+ },
+ "openAll": {
+  "message": "Open all"
+ },
+ "moveTo": {
+  "message": "Move to $1"
+ },
+ "delFolderQ": {
+  "message": "Delete folder?"
+ },
+ "delFolderText": {
+  "message": "\"$1\" and $2 pinned tabs inside will be deleted."
+ },
+ "bookmark": {
+  "message": "Pinned tab"
+ },
+ "folder": {
+  "message": "Folder"
+ },
+ "name": {
+  "message": "Name"
+ },
+ "address": {
+  "message": "Address"
+ },
+ "icon": {
+  "message": "Icon"
+ },
+ "color": {
+  "message": "Color"
+ },
+ "newSpace": {
+  "message": "New Space"
+ },
+ "space": {
+  "message": "Space"
+ },
+ "moveLeft": {
+  "message": "Move left"
+ },
+ "moveRight": {
+  "message": "Move right"
+ },
+ "delSpace": {
+  "message": "Delete Space"
+ },
+ "delSpaceQ": {
+  "message": "Delete Space?"
+ },
+ "delSpaceText": {
+  "message": "\"$1\" and $2 pinned tabs in it will be deleted."
+ },
+ "closeTabsQ": {
+  "message": "Close tabs?"
+ },
+ "closeTabsText": {
+  "message": "$1 tabs will be closed. Pinned tabs and the active tab stay."
+ },
+ "importArc": {
+  "message": "Import from Arc…"
+ },
+ "importHtml": {
+  "message": "Import bookmarks.html…"
+ },
+ "exportJson": {
+  "message": "Export backup (JSON)"
+ },
+ "restoreJson": {
+  "message": "Restore backup…"
+ },
+ "tabsBySpaceOn": {
+  "message": "Keep tabs per Space (tab groups)"
+ },
+ "tabsBySpaceOff": {
+  "message": "Stop keeping tabs per Space"
+ },
+ "importTitle": {
+  "message": "Import"
+ },
+ "importFound": {
+  "message": "Spaces: $1 ($2). Pinned tabs: $3."
+ },
+ "importNone": {
+  "message": "No pinned tabs found in the file."
+ },
+ "importDo": {
+  "message": "Import"
+ },
+ "importAdd": {
+  "message": "Add"
+ },
+ "importReplace": {
+  "message": "Replace all"
+ },
+ "restoreQ": {
+  "message": "Restore from backup?"
+ },
+ "restoreText": {
+  "message": "Current Spaces will be replaced ($1 in the file)."
+ },
+ "failTitle": {
+  "message": "Import failed"
+ },
+ "failNotFile": {
+  "message": "\"$1\" is neither JSON nor bookmarks.html."
+ },
+ "failArc": {
+  "message": "No Spaces with pinned tabs found in the expected format. The diagnostics below contain only the file structure, no links — attach them to a GitHub issue."
+ },
+ "diag": {
+  "message": "Diagnostics"
+ },
+ "copyDiag": {
+  "message": "Copy diagnostics"
+ },
+ "favorites": {
+  "message": "Favorites"
+ }
+}

@@ -1,0 +1,224 @@
+{
+ "extName": {
+  "message": "Spaces Sidebar — Spaces и закреплённые вкладки как в Arc"
+ },
+ "extDesc": {
+  "message": "Боковая панель в духе Arc: Spaces, папки и закреплённые вкладки, которые открываются в своей вкладке. Импорт из Arc в один шаг."
+ },
+ "cmdToggle": {
+  "message": "Показать или скрыть панель"
+ },
+ "editSpace": {
+  "message": "Изменить Space"
+ },
+ "pinCurrent": {
+  "message": "Закрепить текущую вкладку"
+ },
+ "newFolder": {
+  "message": "Новая папка"
+ },
+ "menu": {
+  "message": "Меню"
+ },
+ "searchPh": {
+  "message": "Поиск по закладкам и вкладкам"
+ },
+ "openTabs": {
+  "message": "Открытые вкладки"
+ },
+ "clear": {
+  "message": "Очистить"
+ },
+ "clearHint": {
+  "message": "Закрыть незакреплённые вкладки"
+ },
+ "newTab": {
+  "message": "Новая вкладка"
+ },
+ "nothing": {
+  "message": "Ничего не найдено"
+ },
+ "emptySpace": {
+  "message": "Пустой Space. Закрепите текущую вкладку кнопкой + или перетащите сюда вкладку из списка ниже."
+ },
+ "obTitle": {
+  "message": "Переезжаете из Arc?"
+ },
+ "obText": {
+  "message": "Перетащите сюда StorableSidebar.json. Spaces, папки и закреплённые вкладки перенесутся как были."
+ },
+ "obWhere": {
+  "message": "Файл лежит здесь:"
+ },
+ "obReveal": {
+  "message": "Показать его в файловом менеджере — вставьте в терминал:"
+ },
+ "obChoose": {
+  "message": "Выбрать файл…"
+ },
+ "obLocal": {
+  "message": "Файл читается локально. Из браузера ничего не уходит."
+ },
+ "obPickerHint": {
+  "message": "В окне выбора файла на macOS нажмите ⌘⇧G и вставьте путь."
+ },
+ "copied": {
+  "message": "Скопировано"
+ },
+ "copy": {
+  "message": "Копировать"
+ },
+ "closeTabKeep": {
+  "message": "Закрыть вкладку (закладка останется)"
+ },
+ "close": {
+  "message": "Закрыть"
+ },
+ "cancel": {
+  "message": "Отмена"
+ },
+ "ok": {
+  "message": "OK"
+ },
+ "yes": {
+  "message": "Да"
+ },
+ "delete": {
+  "message": "Удалить"
+ },
+ "replace": {
+  "message": "Заменить"
+ },
+ "openBg": {
+  "message": "Открыть в фоновой вкладке"
+ },
+ "edit": {
+  "message": "Изменить…"
+ },
+ "rename": {
+  "message": "Переименовать…"
+ },
+ "rememberUrl": {
+  "message": "Запомнить текущий адрес вкладки"
+ },
+ "copyLink": {
+  "message": "Копировать ссылку"
+ },
+ "openAll": {
+  "message": "Открыть все"
+ },
+ "moveTo": {
+  "message": "Перенести в $1"
+ },
+ "delFolderQ": {
+  "message": "Удалить папку?"
+ },
+ "delFolderText": {
+  "message": "«$1» и закладки внутри ($2) будут удалены."
+ },
+ "bookmark": {
+  "message": "Закладка"
+ },
+ "folder": {
+  "message": "Папка"
+ },
+ "name": {
+  "message": "Название"
+ },
+ "address": {
+  "message": "Адрес"
+ },
+ "icon": {
+  "message": "Иконка"
+ },
+ "color": {
+  "message": "Цвет"
+ },
+ "newSpace": {
+  "message": "Новый Space"
+ },
+ "space": {
+  "message": "Space"
+ },
+ "moveLeft": {
+  "message": "Сдвинуть влево"
+ },
+ "moveRight": {
+  "message": "Сдвинуть вправо"
+ },
+ "delSpace": {
+  "message": "Удалить Space"
+ },
+ "delSpaceQ": {
+  "message": "Удалить Space?"
+ },
+ "delSpaceText": {
+  "message": "«$1» и закладки в нём ($2) будут удалены."
+ },
+ "closeTabsQ": {
+  "message": "Закрыть вкладки?"
+ },
+ "closeTabsText": {
+  "message": "Будет закрыто вкладок: $1. Закладки и активная вкладка останутся."
+ },
+ "importArc": {
+  "message": "Импорт из Arc…"
+ },
+ "importHtml": {
+  "message": "Импорт bookmarks.html…"
+ },
+ "exportJson": {
+  "message": "Экспорт бэкапа (JSON)"
+ },
+ "restoreJson": {
+  "message": "Восстановить из бэкапа…"
+ },
+ "tabsBySpaceOn": {
+  "message": "Вкладки по Spaces (группы вкладок)"
+ },
+ "tabsBySpaceOff": {
+  "message": "Отключить вкладки по Spaces"
+ },
+ "importTitle": {
+  "message": "Импорт"
+ },
+ "importFound": {
+  "message": "Spaces: $1 ($2). Закладок: $3."
+ },
+ "importNone": {
+  "message": "В файле не нашлось закладок."
+ },
+ "importDo": {
+  "message": "Импортировать"
+ },
+ "importAdd": {
+  "message": "Добавить"
+ },
+ "importReplace": {
+  "message": "Заменить всё"
+ },
+ "restoreQ": {
+  "message": "Восстановить из бэкапа?"
+ },
+ "restoreText": {
+  "message": "Текущие Spaces будут заменены (в файле: $1)."
+ },
+ "failTitle": {
+  "message": "Импорт не удался"
+ },
+ "failNotFile": {
+  "message": "«$1» — не JSON и не bookmarks.html."
+ },
+ "failArc": {
+  "message": "В файле не нашлось Spaces с закладками в ожидаемом формате. В диагностике только структура файла, без ссылок — приложите её к issue на GitHub."
+ },
+ "diag": {
+  "message": "Диагностика"
+ },
+ "copyDiag": {
+  "message": "Копировать диагностику"
+ },
+ "favorites": {
+  "message": "Favorites"
+ }
+}
