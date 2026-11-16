@@ -31,6 +31,7 @@ const ICONS = {
   close: 'M7 7l10 10M17 7L7 17',
   chevron: 'M9.5 6l6 6-6 6',
   upload: 'M12 16V4.5M7.5 9L12 4.5 16.5 9M4.5 19.5h15',
+  split: 'M4 5h16v14H4zM12 5v14',
   copy: 'M9 9h10.5v10.5H9zM5 15V4.5h10.5',
 };
 const SPACE_ICONS = ['star', 'moon', 'grid', 'book', 'tools', 'bolt', 'triangle', 'flag', 'server', 'skull', 'home', 'briefcase',

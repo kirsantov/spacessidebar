@@ -126,3 +126,14 @@ body.filedrag main { box-shadow: inset 0 0 0 2px var(--accent); border-radius: 1
 .copy.done { color: var(--accent); }
 .onboard .primary, .btns button.primary { background: var(--accent); color: var(--bg); font-weight: 600; }
 .onboard .primary { padding: 8px 12px; border-radius: 8px; margin-top: 4px; }
+
+/* группы вкладок Chrome: обводка цвета группы, как у вкладок в Chrome */
+.row.group { box-shadow: inset 0 0 0 1.5px var(--gc); }
+.row.group .fav { color: var(--gc); }
+.row.group .title { color: var(--gc); }
+.row.group.drop-inside { box-shadow: inset 0 0 0 2.5px var(--gc); }
+.row.ing::before { content: ""; position: absolute; left: 12px; top: 0; bottom: 0; width: 2px; background: var(--gc); opacity: .7; border-radius: 1px; }
+/* выделение Ctrl/Cmd+клик */
+.row.sel { background: var(--active); box-shadow: inset 0 0 0 1.5px var(--accent); }
+.row.sel.active { box-shadow: inset 0 0 0 1.5px var(--accent), 0 1px 2px rgb(0 0 0 / .12); }
+.ic.badge { width: 12px; height: 12px; color: var(--muted); stroke-width: 2; }
