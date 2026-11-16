@@ -220,5 +220,50 @@
  },
  "favorites": {
   "message": "Favorites"
+ },
+ "group": {
+  "message": "Group"
+ },
+ "newGroup": {
+  "message": "New group"
+ },
+ "createGroup": {
+  "message": "Create tab group"
+ },
+ "createGroupN": {
+  "message": "Create group from $1 tabs"
+ },
+ "addToGroup": {
+  "message": "Add to group “$1”"
+ },
+ "ungroup": {
+  "message": "Ungroup"
+ },
+ "closeGroup": {
+  "message": "Close group"
+ },
+ "newTabInGroup": {
+  "message": "New tab in group"
+ },
+ "splitWith": {
+  "message": "Open side by side with current tab"
+ },
+ "unsplit": {
+  "message": "Exit split view"
+ },
+ "splitNeed": {
+  "message": "Split view needs Chrome 155 or newer."
+ },
+ "splitFail": {
+  "message": "Could not open split view"
+ },
+ "pinTab": {
+  "message": "Add to pinned"
+ },
+ "closeN": {
+  "message": "Close $1 tabs"
+ },
+ "selectHint": {
+  "message": "Ctrl/Cmd+click to select several tabs"
  }
 }

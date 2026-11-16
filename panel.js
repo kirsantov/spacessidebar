@@ -3,6 +3,10 @@ const uid = () => crypto.randomUUID();
 const t = (key, ...subs) => chrome.i18n.getMessage(key, subs.map(String)) || key;
 const HUES = [265, 220, 180, 140, 80, 40, 15, 330];
 const GROUP_COLORS = { 265: 'purple', 220: 'blue', 180: 'cyan', 140: 'green', 80: 'yellow', 40: 'orange', 15: 'red', 330: 'pink' };
+const COLOR_HUE = { grey: null, blue: 220, red: 15, yellow: 80, green: 140, pink: 330, purple: 265, cyan: 180, orange: 40 };
+const groupCss = (c) => (COLOR_HUE[c] == null ? 'oklch(62% 0.02 260)' : `oklch(62% 0.17 ${COLOR_HUE[c]})`);
+const NO_GROUP = -1, NO_SPLIT = -1;
+const canSplit = () => typeof chrome.tabs.createSplit === 'function';
 const IS_WIN = /Win/i.test(navigator.platform || '');
 const ARC_PATH = IS_WIN
   ? '%LOCALAPPDATA%\\Packages\\TheBrowserCompany.Arc_ttt1ap7aakyb4\\LocalCache\\Local\\Arc\\StorableSidebar.json'
@@ -15,7 +19,10 @@ let state, activeId, winId;
 let bindings = {};          // linkId -> tabId (до перезапуска браузера)
 let tabSpace = {};          // tabId -> spaceId (режим «вкладки по Spaces»)
 let allTabs = new Map();
+let allGroups = new Map();  // groupId -> TabGroup
 let winTabs = [];
+let selected = new Set();   // выделенные вкладки (Ctrl/Cmd+клик)
+let gcol = {};              // groupId -> свёрнута ли группа в панели
 let filter = '';
 let drag = null;            // {kind:'node', id} | {kind:'tab', tabId}
 let lastSaved = '';
@@ -64,7 +71,7 @@ function save() {
   lastSaved = JSON.stringify(state);
   chrome.storage.local.set({ state });
 }
-const saveSession = () => chrome.storage.session.set({ bindings, tabSpace });
+const saveSession = () => chrome.storage.session.set({ bindings, tabSpace, gcol });
 
 function walk(items, fn) {
   for (let i = 0; i < items.length; i++) {
@@ -102,9 +109,12 @@ function spaceOfTab(tab) {
   return f ? f.space.id : tabSpace[tab.id];
 }
 async function refreshTabs() {
-  const tabs = await chrome.tabs.query({});
+  const [tabs, groups] = await Promise.all([chrome.tabs.query({}), chrome.tabGroups.query({})]);
   allTabs = new Map(tabs.map((x) => [x.id, x]));
+  allGroups = new Map(groups.map((g) => [g.id, g]));
   winTabs = tabs.filter((x) => x.windowId === winId);
+  for (const id of selected) if (!allTabs.has(id)) selected.delete(id);
+  for (const k of Object.keys(gcol)) if (!allGroups.has(Number(k))) delete gcol[k];
   let dirty = false;
   for (const [k, v] of Object.entries(bindings)) if (!allTabs.has(v) || !find(k)) { delete bindings[k]; dirty = true; }
   for (const k of Object.keys(tabSpace)) if (!allTabs.has(Number(k)) || !state.spaces.some((s) => s.id === tabSpace[k])) { delete tabSpace[k]; dirty = true; }
@@ -157,6 +167,7 @@ async function pinCurrent() {
 
 /* ---------- tab groups: по одной группе на Space, чужие свёрнуты ---------- */
 let syncing = false, syncAgain = false;
+const autoCollapsed = new Set();
 async function syncGroups() {
   if (!bySpace()) return;
   if (syncing) { syncAgain = true; return; }
@@ -171,11 +182,21 @@ async function syncGroups() {
       // пользователь сам перетащил вкладку в группу Space — считаем это переносом
       if (g) for (const x of tabs) if (x.groupId === g.id && !tabLink(x.id) && tabSpace[x.id] !== s.id) { tabSpace[x.id] = s.id; dirty = true; }
     }
+    // группы, созданные пользователем (не Space), не трогаем: только сворачиваем, когда их Space не активен
+    const spaceGroupIds = new Set(groups.filter((y) => state.spaces.some((s) => s.name === y.title)).map((y) => y.id));
+    for (const g of groups) {
+      if (spaceGroupIds.has(g.id)) continue;
+      const inG = tabs.filter((x) => x.groupId === g.id);
+      if (!inG.length) continue;
+      const foreign = inG.every((x) => spaceOfTab(x) && spaceOfTab(x) !== activeId) && !(activeTab && inG.some((x) => x.id === activeTab.id));
+      if (foreign && !g.collapsed) { await chrome.tabGroups.update(g.id, { collapsed: true }); autoCollapsed.add(g.id); }
+      else if (!foreign && g.collapsed && autoCollapsed.has(g.id)) { await chrome.tabGroups.update(g.id, { collapsed: false }); autoCollapsed.delete(g.id); }
+    }
     for (const s of state.spaces) {
       const mine = tabs.filter((x) => !x.pinned && spaceOfTab(x) === s.id);
       if (!mine.length) continue;
       let g = groups.find((y) => y.title === s.name);
-      const stray = mine.filter((x) => !g || x.groupId !== g.id).map((x) => x.id);
+      const stray = mine.filter((x) => (!g || x.groupId !== g.id) && (x.groupId === NO_GROUP || spaceGroupIds.has(x.groupId))).map((x) => x.id);
       let gid = g && g.id;
       if (stray.length) gid = await chrome.tabs.group(g ? { tabIds: stray, groupId: g.id } : { tabIds: stray, createProperties: { windowId: winId } });
       const want = { title: s.name, color: GROUP_COLORS[s.hue] || 'grey', collapsed: s.id !== activeId && !(activeTab && mine.some((x) => x.id === activeTab.id)) };
@@ -263,15 +284,16 @@ const xBtn = (title, fn) => h('button', { class: 'x', title, onclick: (e) => { e
 function linkRow(n, depth, sub) {
   const x = allTabs.get(bindings[n.id]);
   return h('div', {
-    class: `row link${x ? ' open' : ''}${x && x.active && x.windowId === winId ? ' active' : ''}`,
+    class: `row link${x ? ' open' : ''}${x && x.active && x.windowId === winId ? ' active' : ''}${x && selected.has(x.id) ? ' sel' : ''}`,
     style: `--d:${depth}`, title: n.url,
-    onclick: (e) => openLink(n, e.metaKey || e.ctrlKey),
+    onclick: (e) => { if (x && (e.metaKey || e.ctrlKey)) toggleSelect(x.id); else { clearSelect(); openLink(n, e.metaKey || e.ctrlKey); } },
     onauxclick: (e) => { if (e.button === 1) openLink(n, true); },
     oncontextmenu: (e) => nodeMenu(e, n),
   },
     h('img', { class: 'fav', src: (x && x.favIconUrl) || favicon(n.url), alt: '' }),
     h('span', { class: 'title' }, n.title),
     sub && h('span', { class: 'sub' }, sub),
+    x && x.splitViewId > NO_SPLIT && icon('split', 'badge'),
     x && xBtn(t('closeTabKeep'), () => chrome.tabs.remove(x.id)),
   );
 }
@@ -304,18 +326,65 @@ function treeRows(items, depth, out) {
   }
   return out;
 }
-function tabRow(x) {
+/* ---------- выделение вкладок ---------- */
+function toggleSelect(id) { if (selected.has(id)) selected.delete(id); else selected.add(id); render(); }
+function clearSelect() { if (selected.size) { selected.clear(); render(); } }
+// вкладки, к которым относится действие из меню: всё выделение плюс та, по которой кликнули
+function targets(x) {
+  if (!selected.size) return [x];
+  if (!selected.has(x.id)) { selected.add(x.id); render(); }
+  return winTabs.filter((y) => selected.has(y.id));
+}
+
+function tabRow(x, depth = 0) {
   const row = h('div', {
-    class: `row tab open${x.active ? ' active' : ''}`, title: x.url,
-    onclick: () => focusTab(x),
+    class: `row tab open${x.active ? ' active' : ''}${selected.has(x.id) ? ' sel' : ''}`, title: x.url, style: `--d:${depth}`,
+    onclick: (e) => { if (e.metaKey || e.ctrlKey) toggleSelect(x.id); else { clearSelect(); focusTab(x); } },
     onauxclick: (e) => { if (e.button === 1) chrome.tabs.remove(x.id); },
+    oncontextmenu: (e) => tabMenu(e, x),
   },
     x.favIconUrl ? h('img', { class: 'fav', src: x.favIconUrl, alt: '' }) : h('span', { class: 'fav' }, icon('globe')),
     h('span', { class: 'title' }, x.title || x.url || t('newTab')),
+    x.splitViewId > NO_SPLIT && icon('split', 'badge'),
     xBtn(t('close'), () => chrome.tabs.remove(x.id)),
   );
   dragSource(row, { kind: 'tab', tabId: x.id });
   return row;
+}
+// группа вкладок Chrome — как папка, с обводкой цвета группы
+function groupRow(g, tabs) {
+  const col = !!gcol[g.id];
+  const row = h('div', {
+    class: `row folder group${col ? '' : ' expanded'}`, style: `--d:0; --gc:${groupCss(g.color)}`, title: g.title || t('group'),
+    onclick: () => { gcol[g.id] = !col; saveSession(); render(); },
+    oncontextmenu: (e) => groupMenu(e, g, tabs),
+  }, h('span', { class: 'fav' }, icon('chevron')), h('span', { class: 'title' }, g.title || t('group')), h('span', { class: 'sub' }, String(tabs.length)));
+  row.addEventListener('dragover', (e) => { if (drag && drag.kind === 'tab') { e.preventDefault(); e.stopPropagation(); clearDrop(); row.classList.add('drop-inside'); } });
+  row.addEventListener('drop', (e) => {
+    if (!drag || drag.kind !== 'tab') return;
+    e.preventDefault(); e.stopPropagation(); clearDrop();
+    const ids = selected.has(drag.tabId) ? [...selected] : [drag.tabId];
+    drag = null;
+    chrome.tabs.group({ tabIds: ids, groupId: g.id }).catch(() => {});
+  });
+  return row;
+}
+// открытые вкладки: подряд идущие вкладки одной группы складываем под её заголовок
+function tabRows(tabs) {
+  const spaceNames = new Set(state.spaces.map((s) => s.name));
+  const out = [];
+  for (let i = 0; i < tabs.length; i++) {
+    const x = tabs[i];
+    const g = allGroups.get(x.groupId);
+    if (!g || (bySpace() && spaceNames.has(g.title))) { out.push(tabRow(x)); continue; }
+    let j = i;
+    while (j < tabs.length && tabs[j].groupId === g.id) j++;
+    const inG = tabs.slice(i, j);
+    out.push(groupRow(g, inG));
+    if (!gcol[g.id]) for (const y of inG) { const r = tabRow(y, 1); r.classList.add('ing'); r.style.setProperty('--gc', groupCss(g.color)); out.push(r); }
+    i = j - 1;
+  }
+  return out;
 }
 function copyLine(text) {
   const b = h('button', { class: 'copy', title: t('copy'), onclick: async () => {
@@ -358,7 +427,7 @@ function render() {
 
   const taken = boundTabIds();
   const tabs = winTabs.filter((x) => !taken.has(x.id) && (q ? match(x.title, x.url) : !bySpace() || spaceOfTab(x) === sp.id));
-  $('#tabs').replaceChildren(...tabs.map(tabRow));
+  $('#tabs').replaceChildren(...(q ? tabs.map((x) => tabRow(x)) : tabRows(tabs)));
 
   $('#spacesBar').replaceChildren(
     ...state.spaces.map((s) => {
@@ -458,6 +527,7 @@ function nodeMenu(e, n) {
     { label: n.type === 'link' ? t('edit') : t('rename'), fn: () => editNode(n) },
     n.type === 'link' && x && normUrl(x.url) !== normUrl(n.url) && { label: t('rememberUrl'), fn: () => { n.url = x.url; n.title = x.title || n.title; save(); render(); } },
     n.type === 'link' && { label: t('copyLink'), fn: () => navigator.clipboard.writeText(n.url) },
+    ...(x && x.windowId === winId ? ['-', ...tabItems(targets(x), x)] : []),
     n.type === 'folder' && { label: t('openAll'), fn: () => walk(n.children, (c) => { if (c.type === 'link') openLink(c, true); }) },
     others.length && '-',
     ...others.map((s) => ({ label: t('moveTo', spaceLabel(s)), fn: () => { removeNode(n.id); s.items.push(n); save(); render(); syncGroups(); } })),
@@ -468,6 +538,100 @@ function nodeMenu(e, n) {
     } },
   ]);
 }
+/* ---------- группы и split view ---------- */
+async function editGroup(g) {
+  const hue = COLOR_HUE[g.color];
+  const r = await ask({ title: t('group'), fields: [
+    { key: 'title', label: t('name'), value: g.title || '' },
+    { key: 'hue', label: t('color'), type: 'hue', value: hue == null ? -1 : hue },
+  ] });
+  if (!r) return;
+  const upd = { title: r.title };
+  if (r.hue > 0 && GROUP_COLORS[r.hue]) upd.color = GROUP_COLORS[r.hue];
+  await chrome.tabGroups.update(g.id, upd).catch(() => {});
+}
+async function createGroup(tabs) {
+  const ids = tabs.map((x) => x.id);
+  const n = allGroups.size;
+  const r = await ask({ title: t('newGroup'), fields: [
+    { key: 'title', label: t('name'), value: '' },
+    { key: 'hue', label: t('color'), type: 'hue', value: HUES[n % HUES.length] },
+  ] });
+  if (!r) return;
+  try {
+    const gid = await chrome.tabs.group({ tabIds: ids });
+    await chrome.tabGroups.update(gid, { title: r.title, color: GROUP_COLORS[r.hue] || 'grey' });
+  } catch (e) { note(t('failTitle'), String(e)); }
+  clearSelect();
+}
+// открыть вкладку x рядом с текущей: Chrome требует соседства и одинаковой группы/закрепления
+async function splitWith(x) {
+  if (!canSplit()) return note(t('splitWith'), t('splitNeed'));
+  const cur = winTabs.find((y) => y.active);
+  if (!cur || cur.id === x.id) return;
+  try {
+    if (cur.splitViewId > NO_SPLIT) await chrome.tabs.unsplit(cur.splitViewId);
+    if (x.splitViewId > NO_SPLIT) await chrome.tabs.unsplit(x.splitViewId);
+    if (x.pinned !== cur.pinned) await chrome.tabs.update(x.id, { pinned: cur.pinned });
+    if (x.windowId !== winId || x.groupId !== cur.groupId) {
+      if (cur.groupId === NO_GROUP) { if (x.windowId !== winId) await chrome.tabs.move(x.id, { windowId: winId, index: -1 }); else await chrome.tabs.ungroup(x.id); }
+      else await chrome.tabs.group({ tabIds: [x.id], groupId: cur.groupId });
+    }
+    const c = await chrome.tabs.get(cur.id), y = await chrome.tabs.get(x.id);
+    await chrome.tabs.move(y.id, { index: y.index < c.index ? c.index : c.index + 1 });
+    await chrome.tabs.createSplit([cur.id, x.id]);
+    await chrome.tabs.update(cur.id, { active: true });
+  } catch (e) { note(t('splitFail'), String(e)); }
+  clearSelect();
+}
+function pinTab(x) {
+  if (!x.url || boundTabIds().has(x.id)) return;
+  const node = { id: uid(), type: 'link', title: x.title || x.url, url: x.url };
+  space().items.push(node);
+  bindings[node.id] = x.id;
+}
+// пункты меню для вкладок (одной или выделенных): группы, split, Space
+function tabItems(tabs, x) {
+  const n = tabs.length, ids = tabs.map((y) => y.id);
+  const cur = winTabs.find((y) => y.active);
+  const spaceNames = new Set(state.spaces.map((s) => s.name));
+  const groups = [...allGroups.values()].filter((g) => g.windowId === winId && !(bySpace() && spaceNames.has(g.title)) && !tabs.every((y) => y.groupId === g.id));
+  const grouped = tabs.some((y) => y.groupId !== NO_GROUP && !(bySpace() && spaceNames.has((allGroups.get(y.groupId) || {}).title)));
+  return [
+    { label: n > 1 ? t('createGroupN', n) : t('createGroup'), fn: () => createGroup(tabs) },
+    ...groups.map((g) => ({ label: t('addToGroup', g.title || t('group')), fn: () => { chrome.tabs.group({ tabIds: ids, groupId: g.id }).catch(() => {}); clearSelect(); } })),
+    grouped && { label: t('ungroup'), fn: () => { chrome.tabs.ungroup(ids).catch(() => {}); clearSelect(); } },
+    '-',
+    n === 1 && cur && cur.id !== x.id && { label: t('splitWith'), fn: () => splitWith(x) },
+    n === 1 && x.splitViewId > NO_SPLIT && canSplit() && { label: t('unsplit'), fn: () => chrome.tabs.unsplit(x.splitViewId).catch(() => {}) },
+    bySpace() && state.spaces.filter((s) => s.id !== activeId).length && '-',
+    ...(bySpace() ? state.spaces.filter((s) => s.id !== activeId).map((s) => ({ label: t('moveTo', spaceLabel(s)), fn: () => {
+      for (const id of ids) tabSpace[id] = s.id;
+      clearSelect(); saveSession(); render(); syncGroups();
+    } })) : []),
+  ];
+}
+function tabMenu(e, x) {
+  const tabs = targets(x);
+  const n = tabs.length;
+  showMenu(e, [
+    ...tabItems(tabs, x),
+    '-',
+    { label: n > 1 ? t('pinTab') + ` (${n})` : t('pinTab'), fn: () => { for (const y of tabs) pinTab(y); clearSelect(); saveSession(); save(); render(); syncGroups(); } },
+    { label: n > 1 ? t('closeN', n) : t('close'), danger: true, fn: () => { selected.clear(); chrome.tabs.remove(tabs.map((y) => y.id)); } },
+  ]);
+}
+function groupMenu(e, g, tabs) {
+  const ids = tabs.map((x) => x.id);
+  showMenu(e, [
+    { label: t('edit'), fn: () => editGroup(g) },
+    { label: t('newTabInGroup'), fn: async () => { const x = await chrome.tabs.create({ index: tabs[tabs.length - 1].index + 1 }); chrome.tabs.group({ tabIds: [x.id], groupId: g.id }).catch(() => {}); } },
+    { label: t('ungroup'), fn: () => chrome.tabs.ungroup(ids).catch(() => {}) },
+    '-',
+    { label: t('closeGroup'), danger: true, fn: () => chrome.tabs.remove(ids) },
+  ]);
+}
+
 async function editNode(n) {
   const fields = [{ key: 'title', label: t('name'), value: n.title }];
   if (n.type === 'link') fields.push({ key: 'url', label: t('address'), value: n.url });
@@ -597,15 +761,17 @@ async function init() {
   winId = (await chrome.windows.getCurrent()).id;
   state = migrate((await chrome.storage.local.get('state')).state || defaults());
   activeId = state.activeSpaceId;
-  const ses = await chrome.storage.session.get(['bindings', 'tabSpace']);
+  const ses = await chrome.storage.session.get(['bindings', 'tabSpace', 'gcol']);
   bindings = ses.bindings || {};
   tabSpace = ses.tabSpace || {};
+  gcol = ses.gcol || {};
   await refreshTabs();
   render();
   syncGroups();
 
   for (const ev of ['onCreated', 'onRemoved', 'onUpdated', 'onActivated', 'onMoved', 'onAttached', 'onDetached', 'onReplaced'])
     chrome.tabs[ev].addListener(tabsChanged);
+  for (const ev of ['onCreated', 'onRemoved', 'onUpdated', 'onMoved']) chrome.tabGroups[ev].addListener(tabsChanged);
   chrome.tabs.onCreated.addListener((x) => {
     if (bySpace() && x.windowId === winId && !tabSpace[x.id]) { tabSpace[x.id] = activeId; saveSession(); }
   });
@@ -670,8 +836,12 @@ async function init() {
     onFile(e.dataTransfer.files[0]).catch(importErr);
   });
 
-  document.addEventListener('click', (e) => { if (!e.target.closest('#ctx') && !e.target.closest('#menuBtn')) $('#ctx').hidden = true; });
-  document.addEventListener('contextmenu', (e) => { if (!e.target.closest('.row, footer button, input, textarea, code')) e.preventDefault(); });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#ctx') && !e.target.closest('#menuBtn')) $('#ctx').hidden = true;
+    if (!e.target.closest('.row, #ctx, dialog, footer') && !e.metaKey && !e.ctrlKey) clearSelect();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('#dlg').open) { clearSelect(); $('#ctx').hidden = true; } });
+  document.addEventListener('contextmenu', (e) => { if (!e.target.closest('input, textarea, code')) e.preventDefault(); });
   window.addEventListener('blur', () => { $('#ctx').hidden = true; });
 
   // свайп двумя пальцами влево/вправо — переключение Spaces

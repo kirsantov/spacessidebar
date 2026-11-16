@@ -220,5 +220,50 @@
  },
  "favorites": {
   "message": "Favorites"
+ },
+ "group": {
+  "message": "Группа"
+ },
+ "newGroup": {
+  "message": "Новая группа"
+ },
+ "createGroup": {
+  "message": "Создать группу вкладок"
+ },
+ "createGroupN": {
+  "message": "Создать группу из $1 вкладок"
+ },
+ "addToGroup": {
+  "message": "Добавить в группу «$1»"
+ },
+ "ungroup": {
+  "message": "Разгруппировать"
+ },
+ "closeGroup": {
+  "message": "Закрыть группу"
+ },
+ "newTabInGroup": {
+  "message": "Новая вкладка в группе"
+ },
+ "splitWith": {
+  "message": "Открыть рядом с текущей вкладкой"
+ },
+ "unsplit": {
+  "message": "Выйти из параллельного просмотра"
+ },
+ "splitNeed": {
+  "message": "Параллельный просмотр требует Chrome 155 или новее."
+ },
+ "splitFail": {
+  "message": "Не удалось открыть параллельный просмотр"
+ },
+ "pinTab": {
+  "message": "Добавить в закладки"
+ },
+ "closeN": {
+  "message": "Закрыть вкладки ($1)"
+ },
+ "selectHint": {
+  "message": "Ctrl/Cmd+клик — выбрать несколько вкладок"
  }
 }

@@ -11,6 +11,8 @@ Not affiliated with The Browser Company.
 - **Spaces.** Icons at the bottom of the panel, each with its own color. Click or two-finger swipe to switch.
 - **Pinned tabs and folders.** Click opens the page in a tab; the next click returns to that same tab instead of opening a duplicate. Closing the tab keeps the pin.
 - **Open tabs.** The unpinned tabs of the window sit below the pins. Drag one up to pin it, drag it onto a Space icon to move it there.
+- **Tab groups.** Chrome tab groups show up among the open tabs as folders outlined in the group's color. Ctrl/Cmd+click selects several tabs; right-click creates a group from them, adds them to an existing group, ungroups or closes them. Drag a tab onto a group header to add it. The group appears in Chrome's tab strip too.
+- **Split view.** Right-click a tab (or an open pin) and choose "Open side by side with current tab" to put both into Chrome's split view. Needs Chrome 155 or newer.
 - **Tabs per Space (optional).** Each Space gets a Chrome tab group; switching Spaces collapses the others. Off by default, toggle it in the menu.
 - **Import from Arc.** Drop `StorableSidebar.json` on the panel. Spaces, folders, pinned tabs and Favorites come over. Also imports a standard `bookmarks.html`.
 - **Backup.** Export and restore as JSON.
