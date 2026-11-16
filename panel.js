@@ -329,8 +329,12 @@ function treeRows(items, depth, out) {
 /* ---------- выделение вкладок ---------- */
 function toggleSelect(id) { if (selected.has(id)) selected.delete(id); else selected.add(id); render(); }
 function clearSelect() { if (selected.size) { selected.clear(); render(); } }
-// вкладки, к которым относится действие из меню: выделение, если кликнули по выделенной, иначе одна
-const targets = (x) => (selected.has(x.id) && selected.size > 1 ? winTabs.filter((y) => selected.has(y.id)) : [x]);
+// вкладки, к которым относится действие из меню: всё выделение плюс та, по которой кликнули
+function targets(x) {
+  if (!selected.size) return [x];
+  if (!selected.has(x.id)) { selected.add(x.id); render(); }
+  return winTabs.filter((y) => selected.has(y.id));
+}
 
 function tabRow(x, depth = 0) {
   const row = h('div', {
